@@ -446,6 +446,20 @@ function potentialDragStart(e, marker, team) {
     }
     marker.x = newX;
     updateMarkerPosition(marker, team);
+
+    // 实时更新违规高亮
+    const receiveTeam = state.currentSc === 0 ? 'our' : 'opp';
+    if (team === receiveTeam) {
+      const scene = getCurrentScene();
+      if (scene) {
+        const allMarks = receiveTeam === 'our' ? scene.ourMarkers : scene.oppMarkers;
+        const vp = getViolatedPositions(allMarks, receiveTeam);
+        court.querySelectorAll(`.player-marker[data-team="${team}"]`).forEach(el => {
+          el.classList.toggle('violated', vp.has(parseInt(el.dataset.pos)));
+        });
+      }
+    }
+
     renderViolations();
   };
 
@@ -541,21 +555,29 @@ function checkAllViolations(scene, team) {
   const violations = [];
   const isOur = team === 'our';
 
-  for (const [front, back, desc] of VERTICAL_PAIRS) {
+  for (const [front, back] of VERTICAL_PAIRS) {
     if (byPos[front] && byPos[back]) {
+      let bad = false;
       if (isOur) {
-        if (byPos[front].y >= byPos[back].y) violations.push(desc);
+        if (byPos[front].y >= byPos[back].y) bad = true;
       } else {
-        if (byPos[front].y <= byPos[back].y) violations.push(desc);
+        if (byPos[front].y <= byPos[back].y) bad = true;
+      }
+      if (bad) {
+        violations.push(`${byPos[front].num}号(${front}号位) 应在 ${byPos[back].num}号(${back}号位) 前方`);
       }
     }
   }
-  for (const [left, right, desc] of HORIZONTAL_PAIRS) {
+  for (const [left, right] of HORIZONTAL_PAIRS) {
     if (byPos[left] && byPos[right]) {
+      let bad = false;
       if (isOur) {
-        if (byPos[left].x >= byPos[right].x) violations.push(desc);
+        if (byPos[left].x >= byPos[right].x) bad = true;
       } else {
-        if (byPos[left].x <= byPos[right].x) violations.push(desc);
+        if (byPos[left].x <= byPos[right].x) bad = true;
+      }
+      if (bad) {
+        violations.push(`${byPos[left].num}号(${left}号位) 应在 ${byPos[right].num}号(${right}号位) 左侧`);
       }
     }
   }
@@ -1181,6 +1203,18 @@ function drawCourtToCanvas(ctx, ox, oy, w, h, scene, single) {
       ctx.stroke();
     }
   }
+}
+
+// ============================================================
+//  帮助弹窗
+// ============================================================
+
+function showHelp() {
+  $('help-dialog').style.display = 'flex';
+}
+
+function closeHelp() {
+  $('help-dialog').style.display = 'none';
 }
 
 // ============================================================
