@@ -48,6 +48,8 @@ html, body { height:100%; overflow:hidden; font-family:-apple-system,"Microsoft 
 .top-left { display:flex; align-items:center; gap:6px; flex-shrink:0; }
 .logo { font-size:20px; }
 .title-text { font-size:16px; font-weight:bold; }
+.help-btn { background:none; border:none; font-size:16px; cursor:pointer; padding:2px 4px; opacity:0.7; line-height:1; }
+.help-btn:hover { opacity:1; }
 .top-center {
   display:flex; align-items:center; gap:4px; flex:1; justify-content:center;
   overflow-x:auto; padding:0 8px; scrollbar-width:none;
@@ -162,7 +164,7 @@ html, body { height:100%; overflow:hidden; font-family:-apple-system,"Microsoft 
 .player-marker.opp-team { background:rgba(239,83,80,0.08); border-color:#EF9A9A; color:#C62828; }
 .player-marker.selected { background:#1565C0; border-color:#1565C0; color:#fff; box-shadow:0 2px 12px rgba(21,101,192,0.35); z-index:11; }
 .player-marker.selected.opp-team { background:#C62828; border-color:#C62828; color:#fff; box-shadow:0 2px 12px rgba(198,40,40,0.35); }
-.player-marker.violated { background:rgba(255,152,0,0.15); border-color:#FF9800; color:#E65100; border-width:3px; animation:blink-warn 1s infinite; }
+.player-marker.violated { background:rgba(255,152,0,0.25); border-color:#FF6F00; color:#E65100; border-width:3px; animation:blink-warn 0.8s infinite; box-shadow:0 0 0 2px rgba(255,152,0,0.3); }
 .player-marker.violated .pm-role { color:#E65100; }
 
 @keyframes blink-warn {
@@ -220,6 +222,19 @@ html, body { height:100%; overflow:hidden; font-family:-apple-system,"Microsoft 
 }
 .dialog-btn.primary { background:#1565C0; color:#fff; }
 .dialog-btn:hover { filter:brightness(0.95); }
+
+/* ===== 帮助弹窗 ===== */
+.help-box {
+  background:#fff; border-radius:14px; padding:28px 32px;
+  width:90%; max-width:520px; max-height:85vh; overflow-y:auto;
+  box-shadow:0 8px 40px rgba(0,0,0,0.2);
+}
+.help-title { font-size:20px; margin-bottom:16px; text-align:center; }
+.help-body-text { font-size:14px; line-height:1.7; }
+.help-section { margin-bottom:14px; }
+.help-section strong { display:block; font-size:15px; margin-bottom:4px; color:#1565C0; }
+.help-section p { margin:2px 0; padding-left:8px; color:#555; }
+.violation-demo { color:#E65100; font-weight:bold; }
 
 /* ===== Toast ===== */
 .toast {
