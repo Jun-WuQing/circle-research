@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>轮转研究 - 排球站位分析工具</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <!-- ===== 初始设置弹窗（默认隐藏，可通过按钮重新打开） ===== -->
+  <div id="setup-overlay" class="overlay" style="display:none">
+    <div class="setup-dialog">
+      <h2 class="setup-title">设置初始阵容</h2>
+      <p class="setup-desc">请为每支球队的 6 个位置填写队员号码和场上角色，系统将自动生成 12 轮站位。</p>
+      <div class="setup-columns">
+        <div class="setup-team">
+          <h3 class="setup-team-title my-team-color">🟦 我方</h3>
+          <div class="setup-rows" id="setup-our"></div>
+        </div>
+        <div class="setup-team">
+          <h3 class="setup-team-title opp-team-color">🟥 对方</h3>
+          <div class="setup-rows" id="setup-opp"></div>
+        </div>
+      </div>
+      <button class="btn-primary setup-btn" onclick="onSetupConfirm()">✅ 确认生成</button>
+    </div>
+  </div>
+
+  <!-- ===== 主界面 ===== -->
+  <div id="main-ui" style="display:none">
+
+    <!-- 顶栏 -->
+    <div class="top-bar">
+      <div class="top-left">
+        <span class="logo">🏐</span>
+        <span class="title-text">轮转研究</span>
+      </div>
+      <div class="top-center" id="rotation-bar"></div>
+      <div class="top-right">
+        <button class="top-btn" id="btn-filter" onclick="toggleFilter()" title="切换显示模式">
+          <span id="filter-icon">📋</span>
+          <span id="filter-text">仅接发</span>
+        </button>
+        <button class="top-btn" id="btn-display" onclick="toggleDisplayMode()" title="切换双场/单场">
+          <span id="display-icon">🔄</span>
+          <span id="display-text">双场</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 违规提示 -->
+    <div id="violation-bar" class="violation-bar" style="display:none">
+      <span id="violation-text"></span>
+    </div>
+
+    <!-- 场景标签 -->
+    <div id="scene-label" class="scene-label">接发轮次</div>
+
+    <!-- 球场区域 -->
+    <div class="court-area">
+      <div class="court-wrap" id="court-wrap">
+        <div class="court" id="court">
+          <!-- 对方半场 -->
+          <div class="half" id="half-opp">
+            <div class="half-label opp-label">对方</div>
+            <div class="three-m" id="m3-opp"></div>
+          </div>
+          <!-- 球网 -->
+          <div class="net-line"><span class="net-text">══ 网 ══</span></div>
+          <!-- 我方半场 -->
+          <div class="half" id="half-our">
+            <div class="half-label our-label">我方</div>
+            <div class="three-m" id="m3-our"></div>
+          </div>
+          <!-- 画布叠加层 -->
+          <canvas id="draw-canvas"></canvas>
+          <!-- 球员标记渲染于此 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部工具栏 -->
+    <div class="bottom-bar">
+      <div class="tool-group">
+        <button class="tool-btn active" id="tool-select" onclick="setTool('select')" title="选择/拖拽">
+          👆 <span class="tool-label">选择</span>
+        </button>
+        <button class="tool-btn" id="tool-pen" onclick="setTool('pen')" title="画笔">
+          🖊 <span class="tool-label">画笔</span>
+        </button>
+        <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')" title="橡皮">
+          🧹 <span class="tool-label">橡皮</span>
+        </button>
+      </div>
+      <div class="color-group" id="color-picker">
+        <button class="color-btn active" data-color="#E53935" style="background:#E53935" onclick="setPenColor('#E53935')"></button>
+        <button class="color-btn" data-color="#1E88E5" style="background:#1E88E5" onclick="setPenColor('#1E88E5')"></button>
+        <button class="color-btn" data-color="#43A047" style="background:#43A047" onclick="setPenColor('#43A047')"></button>
+        <button class="color-btn" data-color="#FB8C00" style="background:#FB8C00" onclick="setPenColor('#FB8C00')"></button>
+        <button class="color-btn" data-color="#8E24AA" style="background:#8E24AA" onclick="setPenColor('#8E24AA')"></button>
+        <button class="color-btn" data-color="#424242" style="background:#424242" onclick="setPenColor('#424242')"></button>
+      </div>
+      <div class="action-group">
+        <button class="action-btn" onclick="resetCurrent()" title="复位当前轮次">↩ 复位</button>
+        <button class="action-btn" onclick="saveData()" title="保存所有数据">💾 保存</button>
+        <button class="action-btn primary" onclick="exportImages()" title="输出接发轮站位图片">📤 输出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 编辑弹窗 ===== -->
+  <div id="edit-dialog" class="overlay" style="display:none" onclick="cancelEdit()">
+    <div class="dialog-box" onclick="event.stopPropagation()">
+      <h3 class="dialog-title">编辑球员</h3>
+      <div class="dialog-body">
+        <div class="dialog-field">
+          <label>号码</label>
+          <input type="number" id="edit-number" class="dialog-input" min="0" max="99">
+        </div>
+        <div class="dialog-field">
+          <label>位置</label>
+          <select id="edit-role" class="dialog-select"></select>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-btn" onclick="cancelEdit()">取消</button>
+        <button class="dialog-btn primary" onclick="confirmEdit()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 保存确认 ===== -->
+  <div id="toast" class="toast" style="display:none"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
