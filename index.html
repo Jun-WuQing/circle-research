@@ -36,6 +36,7 @@
       <div class="top-left">
         <span class="logo">🏐</span>
         <span class="title-text">轮转研究</span>
+        <button class="help-btn" onclick="showHelp()" title="帮助说明">❓</button>
       </div>
       <div class="top-center" id="rotation-bar"></div>
       <div class="top-right">
@@ -131,7 +132,49 @@
     </div>
   </div>
 
-  <!-- ===== 保存确认 ===== -->
+  <!-- ===== 帮助弹窗 ===== -->
+  <div id="help-dialog" class="overlay" style="display:none" onclick="closeHelp()">
+    <div class="help-box" onclick="event.stopPropagation()">
+      <h3 class="help-title">帮助说明</h3>
+      <div class="help-body-text">
+        <div class="help-section">
+          <strong>🎯 基本操作</strong>
+          <p>• <b>拖拽</b>：选中「选择」工具，拖拽球员圆圈调整站位</p>
+          <p>• <b>双击</b>：双击球员编辑号码和场上角色</p>
+          <p>• <b>切换轮次</b>：点击顶部轮次芯片查看不同轮次</p>
+        </div>
+        <div class="help-section">
+          <strong>🔄 轮次说明</strong>
+          <p>• 共 <b>12 轮</b>：6 个基础轮次 × 接发/发球</p>
+          <p>• 默认仅显示 <b>6 个接发轮</b>，可切换至全部 12 轮</p>
+          <p>• 发球轮阵容 = 接发轮阵容轮转一次（符合排球规则）</p>
+        </div>
+        <div class="help-section">
+          <strong>⚠️ 违规检测</strong>
+          <p>• 接球方拖拽时自动检测站位是否合规</p>
+          <p>• <b>前后排</b>：前排队员必须比后排更靠近球网</p>
+          <p>• <b>左右顺序</b>：4<3<2（前排），5<6<1（后排）</p>
+          <p>• 违规球员 <span class="violation-demo">橙色高亮</span>，顶部提示具体问题</p>
+        </div>
+        <div class="help-section">
+          <strong>✏️ 画线工具</strong>
+          <p>• 选择「画笔」和颜色，在球场上画出跑位轨迹</p>
+          <p>• 选择「橡皮」点击画线可擦除</p>
+          <p>• 画线与轮次绑定，切换轮次自动切换</p>
+        </div>
+        <div class="help-section">
+          <strong>💾 保存 / 📤 输出</strong>
+          <p>• 「保存」将全部 12 轮数据存入浏览器</p>
+          <p>• 「复位」恢复当前轮次的默认站位并清除画线</p>
+          <p>• 「输出」导出 6 个接发轮为 2×3 图片</p>
+          <p>• 输出前自动检测违规，有问题会提示无法导出</p>
+        </div>
+      </div>
+      <button class="dialog-btn primary" onclick="closeHelp()" style="margin-top:16px;padding:8px 32px">知道了</button>
+    </div>
+  </div>
+
+  <!-- ===== 保存 Toast ===== -->
   <div id="toast" class="toast" style="display:none"></div>
 </div>
 
