@@ -383,11 +383,15 @@ function renderMarker(marker, team) {
   const numText = marker.num > 0 ? marker.num : '?';
   el.innerHTML = `<span class="pm-num">${numText}</span><span class="pm-role">${marker.role}</span>`;
 
-  // 鼠标事件 - 仅 select 模式下可交互
+  // 鼠标/触摸事件 - 仅 select 模式下可交互
   el.addEventListener('mousedown', (e) => {
     if (state.activeTool !== 'select') return;
     potentialDragStart(e, marker, team);
   });
+  el.addEventListener('touchstart', (e) => {
+    if (state.activeTool !== 'select') return;
+    potentialDragStart(e, marker, team);
+  }, { passive: false });
   el.addEventListener('dblclick', () => {
     if (state.activeTool !== 'select') return;
     openEditDialog(marker, team);
@@ -696,20 +700,23 @@ function toggleDisplayMode() {
 
 function setTool(tool) {
   state.activeTool = tool;
-  // 更新按钮状态
   qsa('.tool-btn').forEach(btn => btn.classList.remove('active'));
   const btnMap = { select: 'tool-select', pen: 'tool-pen', eraser: 'tool-eraser' };
   $(btnMap[tool]).classList.add('active');
 
-  // 更新 canvas 指针事件
+  // 更新 canvas 和 markers 的指针事件
   const canvas = $('draw-canvas');
+  const wrap = $('court-wrap');
   canvas.classList.remove('active', 'eraser');
+  wrap.classList.remove('pen-mode', 'eraser-mode');
   if (tool === 'pen') {
     canvas.classList.add('active');
     canvas.style.cursor = 'crosshair';
+    wrap.classList.add('pen-mode');
   } else if (tool === 'eraser') {
     canvas.classList.add('active', 'eraser');
     canvas.style.cursor = 'cell';
+    wrap.classList.add('eraser-mode');
   } else {
     canvas.style.cursor = 'default';
   }
@@ -746,19 +753,24 @@ function initCanvas() {
   // 重绘已有画线
   redrawCanvas();
 
-  // 绑定绘制事件
+  // 绑定绘制事件（鼠标 + 触摸）
   canvas.onmousedown = onCanvasDown;
   canvas.onmousemove = onCanvasMove;
   canvas.onmouseup = onCanvasUp;
   canvas.onmouseleave = onCanvasUp;
+  canvas.ontouchstart = onCanvasDown;
+  canvas.ontouchmove = onCanvasMove;
+  canvas.ontouchend = onCanvasUp;
+  canvas.ontouchcancel = onCanvasUp;
 }
 
 function getCanvasCoords(e) {
   const canvas = $('draw-canvas');
   const rect = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
   return {
-    x: (e.clientX - rect.left) / rect.width,
-    y: (e.clientY - rect.top) / rect.height,
+    x: (t.clientX - rect.left) / rect.width,
+    y: (t.clientY - rect.top) / rect.height,
   };
 }
 
